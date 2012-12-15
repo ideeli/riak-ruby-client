@@ -13,6 +13,7 @@
 #    limitations under the License.
 require 'riak'
 require 'socket'
+require 'timeout'
 require 'base64'
 require 'digest/sha1'
 require 'riak/util/translation'
@@ -75,18 +76,32 @@ module Riak
       end
 
       def socket
-        Thread.current[:riakpbc_socket] ||= new_socket
+        @socket ||= new_socket
       end
 
       def new_socket
-        socket = TCPSocket.new(@client.host, @client.pb_port)
-        socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, true)
+        socket = nil
+        begin
+          Timeout.timeout(2) do
+            socket = TCPSocket.new(@client.host, @client.pb_port)
+            socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, true)
+          end
+        rescue Exception => e
+          msg = "Exceeded timeout on connect to #{@client.host}:#{@client.pb_port} : #{e.class.name}, #{e.message}"
+          Rails.ha_store.blacklist_server!(@client.host, @client.pb_port)
+          next_server = Rails.ha_store.get_next_server
+          @client.host = next_server[:host]
+          @client.pb_port = next_server[:pb_port]
+          msg += ". Server changed to #{@client.host}:#{@client.pb_port}" if @client.host && @client.pb_port
+          Rails.logger.warn(msg) if Rails.logger
+          retry if @client.host && @client.pb_port
+        end
         socket
       end
 
       def reset_socket
-        socket.close
-        Thread.current[:riakpbc_socket] = nil
+        @socket.close if @socket && !@socket.closed?
+        @socket = nil
       end
 
       UINTMAX = 0xffffffff

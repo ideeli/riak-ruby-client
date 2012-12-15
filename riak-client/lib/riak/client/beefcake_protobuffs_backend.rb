@@ -135,11 +135,11 @@ module Riak
       def write_protobuff(code, message)
         encoded = message.encode
         header = [encoded.length+1, MESSAGE_CODES.index(code)].pack("NC")
-        socket.write(header + encoded)
+        reset_on_exception { socket.write(header + encoded) }
       end
 
       def decode_response(*args)
-        header = socket.read(5)
+        header = reset_on_exception { socket.read(5) }
         raise SocketError, "Unexpected EOF on PBC socket" if header.nil?
         msglen, msgcode = header.unpack("NC")
         if msglen == 1
@@ -154,7 +154,7 @@ module Riak
             false
           end
         else
-          message = socket.read(msglen-1)
+          message = reset_on_exception { socket.read(msglen-1) }
           case MESSAGE_CODES[msgcode]
           when :ErrorResp
             res = RpbErrorResp.decode(message)
@@ -183,6 +183,13 @@ module Riak
       rescue SocketError => e
         reset_socket
         raise Riak::ProtobuffsFailedRequest.new(:server_error, e.message)
+      end
+
+      def reset_on_exception(&bock)
+        yield
+      rescue Exception => ex
+        reset_socket
+        raise ex
       end
     end
   end
