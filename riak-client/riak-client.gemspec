@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<curb>, [">= 0.6"])
       s.add_development_dependency(%q<excon>, ["~> 0.5.7"])
       s.add_runtime_dependency(%q<i18n>, [">= 0.4.0"])
-      s.add_runtime_dependency(%q<builder>, ["~> 2.1.2"])
+      s.add_runtime_dependency(%q<builder>, [">= 2.1.2"])
       s.add_runtime_dependency(%q<beefcake>, ["~> 0.3.0"])
     else
       s.add_dependency(%q<rspec>, ["~> 2.4.0"])
@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<curb>, [">= 0.6"])
       s.add_dependency(%q<excon>, ["~> 0.5.7"])
       s.add_dependency(%q<i18n>, [">= 0.4.0"])
-      s.add_dependency(%q<builder>, ["~> 2.1.2"])
+      s.add_dependency(%q<builder>, [">= 2.1.2"])
       s.add_dependency(%q<beefcake>, ["~> 0.3.0"])
     end
   else
@@ -45,7 +45,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<curb>, [">= 0.6"])
     s.add_dependency(%q<excon>, ["~> 0.5.7"])
     s.add_dependency(%q<i18n>, [">= 0.4.0"])
-    s.add_dependency(%q<builder>, ["~> 2.1.2"])
+    s.add_dependency(%q<builder>, [">= 2.1.2"])
     s.add_dependency(%q<beefcake>, ["~> 0.3.0"])
   end
 end
